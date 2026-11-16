@@ -39,13 +39,16 @@ function DashBoard() {
   const [query, setQuery] = useState(initialQuery);
   const [form, setForm] = useState<FormState>(null);
   const { users, loading, error, retry, addUser, updateUser } = useUsers();
-  const { ranks, previousRanks, updatedAt } = useLiveRanking(users.map((u) => u.id));
+  const { ranks, previousRanks, updatedAt } = useLiveRanking(
+    users.map((u) => u.id),
+  );
   const rankedUsers = users.map((u) => {
     const rank = ranks.get(u.id) ?? null;
     const previous = previousRanks.get(u.id);
     return { ...u, rank, change: rank && previous ? previous - rank : 0 };
   });
 
+  console.log("rankedUsers", rankedUsers);
   const ready = !loading && !error;
   const stat = (n: number) => (loading ? null : error ? "—" : n);
   const activeCount = users.filter((u) => u.status === "Active").length;
@@ -138,7 +141,11 @@ function DashBoard() {
             />
           </div>
           {ready && users.length > 0 && (
-            <Leaderboard users={rankedUsers} updatedAt={updatedAt} intervalSeconds={10} />
+            <Leaderboard
+              users={rankedUsers}
+              updatedAt={updatedAt}
+              intervalSeconds={10}
+            />
           )}
           <section className="card table-card">
             <div className="table-head">
