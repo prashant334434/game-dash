@@ -18,7 +18,7 @@ function Leaderboard({ users, updatedAt, intervalSeconds }: LeaderboardProps) {
         <h2 className="card-title">Ranking</h2>
         <span className="live">
           <span className="live-dot" />
-          Live · shuffles every {intervalSeconds}s
+          Live · updates every {intervalSeconds}s
           {updatedAt && <span className="live-time">updated {new Date(updatedAt).toLocaleTimeString()}</span>}
         </span>
       </div>

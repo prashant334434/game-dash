@@ -1,26 +1,21 @@
 import { useEffect, useState } from "react";
-import { rankUsers, shuffle } from "../utils/ranking";
+import { rankUsers } from "../utils/ranking";
 
 type RankingState = { order: number[]; previous: number[]; updatedAt: number | null };
 
-export function useLiveRanking(ids: number[], intervalMs = 10000) {
+export function useLiveRanking(ids: number[]) {
   const [state, setState] = useState<RankingState>({ order: [], previous: [], updatedAt: null });
   const key = ids.join(",");
 
   useEffect(() => {
     if (!key) return;
-    const list = key.split(",").map(Number);
-    const timer = setInterval(
-      () =>
-        setState((s) => ({
-          previous: s.order.length ? s.order : list,
-          order: shuffle(list),
-          updatedAt: Date.now(),
-        })),
-      intervalMs,
-    );
-    return () => clearInterval(timer);
-  }, [key, intervalMs]);
+    const source = new EventSource(`/api/ranks/stream?ids=${key}`);
+    source.onmessage = (e) => {
+      const { order, updatedAt } = JSON.parse(e.data) as { order: number[]; updatedAt: number };
+      setState((s) => ({ previous: s.order.length ? s.order : order, order, updatedAt }));
+    };
+    return () => source.close();
+  }, [key]);
 
   return {
     ranks: rankUsers(ids, state.order),
